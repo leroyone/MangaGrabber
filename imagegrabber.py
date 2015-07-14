@@ -93,7 +93,7 @@ chapterRange = range(startingChapter, startingChapter+endingChapter)
 
 for eachChapter in chapterRange:
     chapname = getChapName(eachChapter)
-    if os.path.exists(chapname + '.zip') == True:
+    if os.path.exists(chapname + '.cbz') == True:
         print '\n' + str(chapname) + ' appears to already have been saved.'
         whatNext = raw_input('Press any key to continue.')
     else:
@@ -108,5 +108,7 @@ for eachChapter in chapterRange:
             pageLocation = theChunk('http://www.mangapanda.com' + str(webStart) + str(eachPage) + str(webEnd))
             print '\n\n\nDownloading Chapter ' + str(eachChapter) + '. page ' + str(eachPage) + '/' + str(numberOfPages) + '\n\n'
             os.system('wget -P ' + chapname + ' ' + str(pageLocation))
-        os.system('zip -r ' + chapname + ' ' + chapname + '/')
-        os.system('rm -r ' + chapname + '/')
+        #os.system('zip -r ' + chapname + ' ' + chapname + '/')
+        #os.system('rm -r ' + chapname + '/')
+
+#os.system("rename '\s/\.zip$/\.cbz/' *.zip")
