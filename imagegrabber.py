@@ -20,7 +20,7 @@ def getChapPage(chapnumber):
         def handle_starttag(self, tag, attrs):
             if tag == 'a':
                 for name, value in attrs:
-                    if name == 'href' and value.endswith('chapter-' + str(chapnumber) + '.html'):
+                    if name == 'href' and value.endswith(str(chapnumber)):
                         self.output = value
     parser = MyHTMLParser()
     parser.feed(starthtml)
@@ -41,14 +41,13 @@ def pageGet(chapAddress):
         def handle_starttag(self, tag, attrs):
             if tag == 'option':
                 for name, value in attrs:
-                    if name == 'value' and value.endswith('html'):
+                    if name == 'value':
                         self.output = value
     parser = MyHTMLParser()
     parser.feed(chapConts)
     numberLine = parser.output
     a = numberLine.split('/')
-    b = a[1].split('-')
-    return int(b[-1])
+    return int(a[-1])
     
 ###### Get Image URL ######
 
@@ -100,12 +99,9 @@ for eachChapter in chapterRange:
         os.system('mkdir ' + chapname)
          
         hat = getChapPage(eachChapter)
-        fish = hat.index('-',((hat.index('-')+1)))
-        webStart = hat[:fish+1]
-        webEnd = hat[fish+2:]
         numberOfPages = pageGet('http://www.mangapanda.com' + str(hat))
         for eachPage in range(1,numberOfPages+1):
-            pageLocation = theChunk('http://www.mangapanda.com' + str(webStart) + str(eachPage) + str(webEnd))
+            pageLocation = theChunk('http://www.mangapanda.com' + str(hat) + '/' + str(eachPage))
             print '\n\n\nDownloading Chapter ' + str(eachChapter) + '. page ' + str(eachPage) + '/' + str(numberOfPages) + '\n\n'
             os.system('wget -P ' + chapname + ' ' + str(pageLocation))
         #os.system('zip -r ' + chapname + ' ' + chapname + '/')
