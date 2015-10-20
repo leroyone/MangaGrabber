@@ -1,10 +1,30 @@
 #!/usr/bin/python
 
 import urllib2
-import os
+import pickle
+
+''' 
+To Do List:
+    Intergrate search function
+    Create some graphic interface
+    Retain the ability to work from command
+    Organize folder structure
+    Work in multiple website searches
+    Create percentage bar
+    Give option to update
+    Give option to select which chapters to download
+    Save information about previous downloads and searches
+'''
+
+
+######### My Manga Online Search #########
+#http://www.mymangaonline.com/search?keyword=
+###################################
+
+
+
 
 ###### Initialize manga website ######
-
 startpage = urllib2.urlopen('http://www.mymangaonline.com/manga-info/death-note.html')
 starthtml = startpage.read()
 
@@ -38,7 +58,6 @@ def chapterSurfer(webPage):
     chapterList.append(eachChapter(chapterText))
     
     while 'next' in chapterText:
-        print len(chapterList)
         nextLink = chapterText[chapterText.index('next'):]
         nextLink = nextLink[nextLink.index('http'):]
         nextLink = nextLink[:nextLink.index('"')]
@@ -46,7 +65,8 @@ def chapterSurfer(webPage):
         chapterList.append(eachChapter(chapterText))
     return chapterList
 
-a = chapterSurfer(initialChapter)
-
-#for each in a:
- #   print each
+if os.path.isfile(deathNote.p) == False:
+    listOfImages = chapterSurfer(initialChapter)
+    pickle.dump(a, open('deathNote.p', 'wb'))
+else:
+    listOfImages = pickle.load(open('deathNote.p', 'rb'))
