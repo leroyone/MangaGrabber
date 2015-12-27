@@ -101,9 +101,11 @@ def imageGrabber(chapterPage):
         os.system('mv ' + chapTitle + '/' + oldName + ' ' + chapTitle + '/' + newName)
         chapterSource = chapterSource[chapterSource.index('imgmax')+3:]
 
-x = chapterListMaker('http://www.mymangaonline.com/manga-info/death-note.html')
-for each in x:
-    imageGrabber(each)
+def whichChapters(startChapter, endChapter, homePage):
+    '''
+    downloads chapters from within range
+    '''
+    pass
 
 
 ''' 
