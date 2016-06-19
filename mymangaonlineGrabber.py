@@ -81,8 +81,8 @@ def chapterTitle(chapterPage):
     returns chapter name as str
     '''
     chapterPage = webPageOpener(chapterPage)
-    chapterPage = chapterPage[chapterPage.index('selected value')+16:]
-    return chapterPage[:chapterPage.index('"')]
+    chapterPage = chapterPage[chapterPage.index('<h1>')+4:]
+    return chapterPage[:chapterPage.index('</h1>')]
 
 def imageGrabber(chapterPage):
     '''
@@ -90,12 +90,13 @@ def imageGrabber(chapterPage):
     downloads images into a folder
     '''
     chapterSource = webPageOpener(chapterPage)
-    chapterSource = chapterSource[chapterSource.index('chapter-detail'):]
+    chapterSource = chapterSource[chapterSource.index('img id'):]
     chapTitle = chapterTitle(chapterPage)
+    chapTitle = chapTitle.replace(' ','-')
+    chapTitle = chapTitle.replace(':','.')
     os.system('mkdir ' + chapTitle)
     while 'imgmax' in chapterSource:
         imageLink = chapterSource[chapterSource.index('src')+5:chapterSource.index('imgmax')+11]
-        print imageLink
         os.system('wget -P ' + chapTitle + ' ' + imageLink)
         oldName = imageLink[imageLink.rindex('/'):]
         newName = imageLink[imageLink.rindex('/'):imageLink.index('?img')]
@@ -106,8 +107,8 @@ def whichChapters(startChapter, endChapter, chapterList):
     '''
     downloads chapters from within range
     '''
-    pass
-
+    for i in range(startChapter-1,endChapter):
+        imageGrabber(chapterList[i])
 
 ''' 
 if os.path.isfile(deathNote.p) == False:
@@ -142,10 +143,10 @@ def commandLineRun():
         return
     chapterList = chapterListMaker(thisManga[1][0])
     clear()
-    print 'There are ' + str(len(chapterList)) + ' chapter available for "' + mangaName + '".'
+    print 'There are ' + str(len(chapterList)) + ' chapters available for "' + mangaName + '".'
     print 'Which chapters would you like to download?\n'
-    startChapter = raw_input('Starting chapter:\n')
-    endChapter = raw_input('\nEnd chapter:\n')
+    startChapter = int(raw_input('Starting chapter:\n'))
+    endChapter = int(raw_input('\nEnd chapter:\n'))
     whichChapters(startChapter, endChapter, chapterList)
     
 commandLineRun()
