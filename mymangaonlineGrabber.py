@@ -27,22 +27,22 @@ def searchMymangaonline(searchTerm):
     searchTerm: (+) concatenated string
     returns a dict with search results (name, page-link, image-link)
     '''
-    scratchPage = webPageOpener('http://www.mymangaonline.com/search?keyword=' + searchTerm)
-    scratchPage = scratchPage[scratchPage.index('box-item'):]
+    scratchPage = webPageOpener('http://mangaonline.to/search.html?key=' + searchTerm)
+    scratchPage = scratchPage[scratchPage.index('popular-body'):]
     resultsList = []
     resultsDict = {}
     resCount = 1
-    while 'box-item' in scratchPage:
-        resLink = 'http://www.mymangaonline.com/' + scratchPage[scratchPage.index('manga-info'):scratchPage.index('html')+4]
+    while 'mask-title' in scratchPage:
+        resLink = 'http://mangaonline.to/' + scratchPage[scratchPage.index('manga-info'):scratchPage.index('html')+4]
+        scratchPage = scratchPage[scratchPage.index('src')+5:]
+        resImage = scratchPage[:scratchPage.index('" ')]
         scratchPage = scratchPage[scratchPage.index('alt')+5:]
-        resName = scratchPage[:scratchPage.index('src')-2]
-        scratchPage = scratchPage[scratchPage.index('src')+6:]
-        resImage = 'http://www.mymangaonline.com/' + scratchPage[:scratchPage.index('" ')]
+        resName = scratchPage[:scratchPage.index('"')]
         scratchPage = scratchPage[scratchPage.index('</span>')+5:]
         resultsList.append([resName,[resLink,resImage]])
         resultsDict[resName]=resLink,resImage,resCount
         resCount += 1
-        print resultsList
+    return resultsList
 
 def checkResultsPageCount(scratchPage):
     '''
@@ -68,10 +68,11 @@ def chapterListMaker(homePage):
     '''
     homePage = webPageOpener(homePage)
     chapterList = []
-    while 'item-chapter' in homePage:
-        homePage = homePage[homePage.index('item-chapter')+3:]
-        chapterLink = 'http://www.mymangaonline.com/' + homePage[homePage.index('href')+6:homePage.index('html')+4]
+    while 'read-online' in homePage:
+        homePage = homePage[homePage.index('read-online'):]
+        chapterLink = 'http://mangaonline.to/' + homePage[:homePage.index('html')+4]
         chapterList.insert(0,chapterLink)
+        homePage = homePage[homePage.index('href'):]
     return chapterList
 
 def chapterTitle(chapterPage):
@@ -101,7 +102,7 @@ def imageGrabber(chapterPage):
         os.system('mv ' + chapTitle + '/' + oldName + ' ' + chapTitle + '/' + newName)
         chapterSource = chapterSource[chapterSource.index('imgmax')+3:]
 
-def whichChapters(startChapter, endChapter, homePage):
+def whichChapters(startChapter, endChapter, chapterList):
     '''
     downloads chapters from within range
     '''
@@ -116,4 +117,35 @@ else:
     listOfImages = pickle.load(open('deathNote.p', 'rb'))
 '''
 
-#x = searchMymangaonline('death+note')
+def clear():
+    os.system('clear')
+
+def commandLineRun():
+    clear()
+    searchString = raw_input('...and what Manga would you like to search for today?\n\n')
+    searchString = searchString.replace(' ', '+')
+    searchResults = searchMymangaonline(searchString)
+    clear()
+    print 'We have found ' + str(len(searchResults)) + ' popular results.\nWhich Manga would you like to try? (1-' + str(len(searchResults)) + ')\n'
+    count = 1
+    for eachResult in searchResults:
+        print str(count) + ') ' + eachResult[0]
+        count += 1
+    ########################### stick a try in here!!! ###############################
+    selection = int(raw_input('\n'))-1
+    thisManga = searchResults[selection]
+    mangaName = thisManga[0]
+    clear()
+    confirm = raw_input('You would like to try "' + mangaName + '"? (Y/n) ')
+    if confirm == 'n' or confirm == 'N':
+        print '\nThen why did you select it...?\n'
+        return
+    chapterList = chapterListMaker(thisManga[1][0])
+    clear()
+    print 'There are ' + str(len(chapterList)) + ' chapter available for "' + mangaName + '".'
+    print 'Which chapters would you like to download?\n'
+    startChapter = raw_input('Starting chapter:\n')
+    endChapter = raw_input('\nEnd chapter:\n')
+    whichChapters(startChapter, endChapter, chapterList)
+    
+commandLineRun()
