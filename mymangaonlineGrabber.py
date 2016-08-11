@@ -97,7 +97,7 @@ def imageGrabber(chapterPage):
     chapTitle = chapTitle.replace(':','.')
     os.system('mkdir ' + chapTitle)
     while 'imgmax' in chapterSource:
-        imageLink = chapterSource[chapterSource.index('src')+5:chapterSource.index('imgmax')+11]
+        imageLink = chapterSource[chapterSource.index(' src')+6:chapterSource.index('imgmax')+11]
         os.system('wget -P ' + chapTitle + ' ' + imageLink)
         oldName = imageLink[imageLink.rindex('/'):]
         newName = imageLink[imageLink.rindex('/'):imageLink.index('?img')]
