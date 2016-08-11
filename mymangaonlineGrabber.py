@@ -71,7 +71,7 @@ def chapterListMaker(homePage):
     chapterList = []
     while 'read-online' in homePage:
         homePage = homePage[homePage.index('read-online'):]
-        chapterLink = 'http://mangaonline.to/' + homePage[:homePage.index('html')+4]
+        chapterLink = 'http://mangaonline.to/' + homePage[:homePage.index('"')]
         chapterList.insert(0,chapterLink)
         homePage = homePage[homePage.index('href'):]
     return chapterList
