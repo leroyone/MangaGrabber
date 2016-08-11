@@ -17,8 +17,9 @@ To Do List:
     Save information about previous downloads and searches
 '''
 def webPageOpener(webPage):
-    page = urllib2.urlopen(webPage)
-    return page.read()
+    opener = urllib2.build_opener()
+    opener.addheaders = [('User-agent', 'Mozilla/5.0')]
+    return opener.open(webPage).read()
 
 ######### Do a Search ###########
 
@@ -28,12 +29,12 @@ def searchMymangaonline(searchTerm):
     returns a dict with search results (name, page-link, image-link)
     '''
     scratchPage = webPageOpener('http://mangaonline.to/search.html?key=' + searchTerm)
-    scratchPage = scratchPage[scratchPage.index('popular-body'):]
+    scratchPage = scratchPage[scratchPage.index('popular-body')+15:]
     resultsList = []
     resultsDict = {}
     resCount = 1
     while 'mask-title' in scratchPage:
-        resLink = 'http://mangaonline.to/' + scratchPage[scratchPage.index('manga-info'):scratchPage.index('html')+4]
+        resLink = 'http://mangaonline.to/' + scratchPage[scratchPage.index('manga-info'):scratchPage.index('">')]
         scratchPage = scratchPage[scratchPage.index('src')+5:]
         resImage = scratchPage[:scratchPage.index('" ')]
         scratchPage = scratchPage[scratchPage.index('alt')+5:]
