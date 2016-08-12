@@ -85,7 +85,7 @@ def chapterTitle(chapterPage):
     chapterPage = chapterPage[chapterPage.index('<h1>')+4:]
     return chapterPage[:chapterPage.index('</h1>')]
 
-def imageGrabber(chapterPage):
+def imageGrabber(chapterPage, nameOfFile):
     '''
     chapterPage: address of chapter
     downloads images into a folder
@@ -95,6 +95,8 @@ def imageGrabber(chapterPage):
     chapTitle = chapterTitle(chapterPage)
     chapTitle = chapTitle.replace(' ','-')
     chapTitle = chapTitle.replace(':','.')
+    os.system('mkdir ' + nameOfFile)
+    chapTitle = nameOfFile + '/' + chapTitle
     os.system('mkdir ' + chapTitle)
     while 'imgmax' in chapterSource:
         imageLink = chapterSource[chapterSource.index(' src')+6:chapterSource.index('imgmax')+11]
@@ -104,12 +106,12 @@ def imageGrabber(chapterPage):
         os.system('mv ' + chapTitle + '/' + oldName + ' ' + chapTitle + '/' + newName)
         chapterSource = chapterSource[chapterSource.index('imgmax')+3:]
 
-def whichChapters(startChapter, endChapter, chapterList):
+def whichChapters(startChapter, endChapter, chapterList, nameOfFile):
     '''
     downloads chapters from within range
     '''
     for i in range(startChapter-1,endChapter):
-        imageGrabber(chapterList[i])
+        imageGrabber(chapterList[i], nameOfFile)
 
 ''' 
 if os.path.isfile(deathNote.p) == False:
@@ -118,6 +120,17 @@ if os.path.isfile(deathNote.p) == False:
 else:
     listOfImages = pickle.load(open('deathNote.p', 'rb'))
 '''
+
+def getNameOfFile():
+    a = raw_input('What would you like to name the file?')
+    a = a.replace(' ','-')
+    a = a.replace(':','.')
+    return a
+
+def turnIntoCBZ(nameOfFile):
+    os.system('cd ' + nameOfFile + ' ; zip -r ' + nameOfFile + ' ./*')
+    os.system('mv ' + nameOfFile + '/' + nameOfFile + '.zip ./' + nameOfFile + '.cbz')
+    os.system('rm -r ' + nameOfFile + '/')
 
 def clear():
     os.system('clear')
@@ -148,6 +161,10 @@ def commandLineRun():
     print 'Which chapters would you like to download?\n'
     startChapter = int(raw_input('Starting chapter:\n'))
     endChapter = int(raw_input('\nEnd chapter:\n'))
-    whichChapters(startChapter, endChapter, chapterList)
+    clear()
+    print 'Ready to download chapters ' + str(startChapter) + ' to ' + str(endChapter) + ' from ' + mangaName + '.\n\n'
+    nameOfFile = getNameOfFile()
+    whichChapters(startChapter, endChapter, chapterList, nameOfFile)
+    turnIntoCBZ(nameOfFile)
     
 commandLineRun()
