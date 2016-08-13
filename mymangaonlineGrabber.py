@@ -83,8 +83,19 @@ def chapterTitle(chapterPage):
     '''
     chapterPage = webPageOpener(chapterPage)
     chapterPage = chapterPage[chapterPage.index('<h1>')+4:]
-    print chapterPage[:chapterPage.index('</h1>')]
     return chapterPage[:chapterPage.index('</h1>')]
+
+def nameFixer(nameToFix):
+    nameToFix = nameToFix.replace(' ','-')
+    nameToFix = nameToFix.replace('&#39;','')
+    nameToFix = nameToFix.replace('&quot;','')
+    nameToFix = nameToFix.replace('#','')
+    nameToFix = nameToFix.replace('&','')
+    nameToFix = nameToFix.replace(';','')
+    nameToFix = nameToFix.replace(':','')
+    nameToFix = nameToFix.replace("'","")    
+    nameToFix = nameToFix.replace('"','')
+    return nameToFix
 
 def imageGrabber(chapterPage, nameOfFile):
     '''
@@ -94,12 +105,7 @@ def imageGrabber(chapterPage, nameOfFile):
     chapterSource = webPageOpener(chapterPage)
     chapterSource = chapterSource[chapterSource.index('img id'):]
     chapTitle = chapterTitle(chapterPage)
-    chapTitle = chapTitle.replace(' ','-')
-    chapTitle = chapTitle.replace('&#39;','')
-    chapTitle = chapTitle.replace('#','')
-    chapTitle = chapTitle.replace(':','')
-    chapTitle = chapTitle.replace("'","")    
-    chapTitle = chapTitle.replace('"','')
+    chapTitle = nameFixer(chapTitle)
     os.system('mkdir ' + nameOfFile)
     chapTitle = nameOfFile + '/' + chapTitle
     os.system('mkdir ' + chapTitle)
@@ -128,12 +134,7 @@ else:
 
 def getNameOfFile():
     a = raw_input('What would you like to name the file?\n')
-    a = a.replace(' ','-')
-    a = a.replace('&#39;','')
-    a = a.replace('#','')
-    a = a.replace(':','')
-    a = a.replace("'","")    
-    a = a.replace('"','')
+    a = nameFixer(a)
     return a
 
 def turnIntoCBZ(nameOfFile):
@@ -174,6 +175,6 @@ def commandLineRun():
     print 'Ready to download chapters ' + str(startChapter) + ' to ' + str(endChapter) + ' from ' + mangaName + '.\n\n'
     nameOfFile = getNameOfFile()
     whichChapters(startChapter, endChapter, chapterList, nameOfFile)
-    #turnIntoCBZ(nameOfFile)
+    turnIntoCBZ(nameOfFile)
     
 commandLineRun()
