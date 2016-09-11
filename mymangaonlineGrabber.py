@@ -28,7 +28,7 @@ def searchMymangaonline(searchTerm):
     searchTerm: (+) concatenated string
     returns a dict with search results (name, page-link, image-link)
     '''
-    scratchPage = webPageOpener('http://mangaonline.to/search.html?key=' + searchTerm)
+    scratchPage = webPageOpener('http://mangaonline.to/search.html?keyword=' + searchTerm)
     scratchPage = scratchPage[scratchPage.index('popular-body')+15:]
     resultsList = []
     resultsDict = {}
