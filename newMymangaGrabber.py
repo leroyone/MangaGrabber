@@ -34,9 +34,9 @@ def pageGetter(chapterPage):
 def imgLinkGetter(pageLink):
     dfs = webPageOpener(pageLink)
     dfs = dfs[dfs.index('onerror'):]
-    dfs = dfs[dfs.index('class'):]
+    #dfs = dfs[dfs.index('class'):]
     dfs = dfs[dfs.index('src')+5:]
-    linkyLink = dfs[:dfs.index('"')]
+    linkyLink = dfs[:dfs.index('"')-1]
     return linkyLink
 
 def imageGetter(pageList, count, getPage):
@@ -77,7 +77,7 @@ def zipAndCbz(nameOfFile):
 def whichChapters(startChapter,endChapter,chapterList):
     for eachChapter in range(startChapter-1,endChapter):
         pageList = pageGetter(chapterList[eachChapter])
-        imageGetter(pageList, str(eachChapter+1), chapterList[eachChapter][:-1])
+        imageGetter(pageList, str(eachChapter+1110), chapterList[eachChapter][:-1])
 
 def commandLineRun():
     mangaName = raw_input('Enter name of manga as written in URL: ')

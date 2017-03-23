@@ -102,25 +102,28 @@ def imageGrabber(chapterPage, nameOfFile):
     chapterPage: address of chapter
     downloads images into a folder
     '''
+    nameCounter = 111111
     chapterSource = webPageOpener(chapterPage)
     chapterSource = chapterSource[chapterSource.index('img id'):]
     chapTitle = chapterTitle(chapterPage)
     chapTitle = nameFixer(chapTitle)
-    os.system('mkdir ' + nameOfFile)
     chapTitle = nameOfFile + '/' + chapTitle
     os.system('mkdir ' + chapTitle)
-    while 'imgmax' in chapterSource:
-        imageLink = chapterSource[chapterSource.index(' src')+6:chapterSource.index('imgmax')+11]
+    while 'imgmax' in chapterSource or 'imgur' in chapterSource:
+        chapterSource = chapterSource[chapterSource.index(' src')+6:]
+        imageLink = chapterSource[:chapterSource.index('"')]
         os.system('wget -P ' + chapTitle + ' ' + imageLink)
         oldName = imageLink[imageLink.rindex('/'):]
-        newName = imageLink[imageLink.rindex('/'):imageLink.index('?img')]
+        newName = str(nameCounter)
         os.system('mv ' + chapTitle + '/' + oldName + ' ' + chapTitle + '/' + newName)
-        chapterSource = chapterSource[chapterSource.index('imgmax')+3:]
+        chapterSource = chapterSource[chapterSource.index('"'):]
+        nameCounter += 1
 
 def whichChapters(startChapter, endChapter, chapterList, nameOfFile):
     '''
     downloads chapters from within range
     '''
+    os.system('mkdir ' + nameOfFile)
     for i in range(startChapter-1,endChapter):
         imageGrabber(chapterList[i], nameOfFile)
 
