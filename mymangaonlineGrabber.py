@@ -104,12 +104,12 @@ def imageGrabber(chapterPage, nameOfFile):
     '''
     nameCounter = 111111
     chapterSource = webPageOpener(chapterPage)
-    chapterSource = chapterSource[chapterSource.index('img id'):]
     chapTitle = chapterTitle(chapterPage)
     chapTitle = nameFixer(chapTitle)
     chapTitle = nameOfFile + '/' + chapTitle
     os.system('mkdir ' + chapTitle)
-    while 'onerror' in chapterSource:
+    while 'img id' in chapterSource:
+        chapterSource = chapterSource[chapterSource.index('img id'):]
         chapterSource = chapterSource[chapterSource.index(' src')+6:]
         imageLink = chapterSource[:chapterSource.index('"')]
         os.system('wget -P ' + chapTitle + ' ' + imageLink)
@@ -122,7 +122,6 @@ def imageGrabber(chapterPage, nameOfFile):
             print 'Unknown image type'
             break
         os.system('mv ' + chapTitle + '/' + oldName + ' ' + chapTitle + '/' + newName)
-        chapterSource = chapterSource[chapterSource.index('onerror')+3:]
         nameCounter += 1
 
 def whichChapters(startChapter, endChapter, chapterList, nameOfFile):
