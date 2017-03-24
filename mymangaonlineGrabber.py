@@ -109,14 +109,20 @@ def imageGrabber(chapterPage, nameOfFile):
     chapTitle = nameFixer(chapTitle)
     chapTitle = nameOfFile + '/' + chapTitle
     os.system('mkdir ' + chapTitle)
-    while 'imgmax' in chapterSource or 'imgur' in chapterSource:
+    while 'onerror' in chapterSource:
         chapterSource = chapterSource[chapterSource.index(' src')+6:]
         imageLink = chapterSource[:chapterSource.index('"')]
         os.system('wget -P ' + chapTitle + ' ' + imageLink)
         oldName = imageLink[imageLink.rindex('/'):]
-        newName = str(nameCounter)
+        if 'jpg' in imageLink:
+            newName = str(nameCounter) + '.jpg'
+        elif 'png' in imageLink:
+            newName = str(nameCounter) + '.png'
+        else:
+            print 'Unknown image type'
+            break
         os.system('mv ' + chapTitle + '/' + oldName + ' ' + chapTitle + '/' + newName)
-        chapterSource = chapterSource[chapterSource.index('"'):]
+        chapterSource = chapterSource[chapterSource.index('onerror')+3:]
         nameCounter += 1
 
 def whichChapters(startChapter, endChapter, chapterList, nameOfFile):
@@ -126,14 +132,6 @@ def whichChapters(startChapter, endChapter, chapterList, nameOfFile):
     os.system('mkdir ' + nameOfFile)
     for i in range(startChapter-1,endChapter):
         imageGrabber(chapterList[i], nameOfFile)
-
-''' 
-if os.path.isfile(deathNote.p) == False:
-    listOfImages = chapterSurfer(initialChapter)
-    pickle.dump(a, open('deathNote.p', 'wb'))
-else:
-    listOfImages = pickle.load(open('deathNote.p', 'rb'))
-'''
 
 def getNameOfFile():
     a = raw_input('What would you like to name the file?\n')
