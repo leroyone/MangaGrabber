@@ -111,7 +111,12 @@ def imageGrabber(chapterPage, nameOfFile):
     while 'img id' in chapterSource:
         chapterSource = chapterSource[chapterSource.index('img id'):]
         chapterSource = chapterSource[chapterSource.index(' src')+6:]
-        imageLink = chapterSource[:chapterSource.index('"')]
+        if chapterSource[0] == '0':
+            ending = "'"
+            chapterSource = chapterSource[chapterSource.index('.src')+6:]
+        else:
+            ending = '"'
+        imageLink = chapterSource[:chapterSource.index(ending)]
         os.system('wget -P ' + chapTitle + ' ' + imageLink)
         oldName = imageLink[imageLink.rindex('/'):]
         if 'jpg' in imageLink:
