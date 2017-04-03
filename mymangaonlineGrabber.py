@@ -152,17 +152,22 @@ def clear():
 
 def commandLineRun():
     clear()
-    searchString = raw_input('...and what Manga would you like to search for today?\n\n')
-    searchString = searchString.replace(' ', '+')
+    searchStringOriginal = raw_input('...and what Manga would you like to search for today?\n\n')
+    searchString = searchStringOriginal.replace(' ', '+')
     searchResults = searchMymangaonline(searchString)
     clear()
-    print 'We have found ' + str(len(searchResults)) + ' popular results.\nWhich Manga would you like to try? (1-' + str(len(searchResults)) + ')\n'
     count = 1
     for eachResult in searchResults:
         print str(count) + ') ' + eachResult[0]
         count += 1
     ########################### stick a try in here!!! ###############################
-    selection = int(raw_input('\n'))-1
+    if len(searchResults) > 0:
+        foundText = '\nWe have found ' + str(len(searchResults)) + ' popular results.\nWhich Manga would you like to try? (1-' + str(len(searchResults)) + ')\n'
+    else:
+        raw_input('We have found no results for "' + searchStringOriginal + '"\nPlease try again.\n')
+        commandLineRun()
+        return
+    selection = int(raw_input(foundText))-1
     thisManga = searchResults[selection]
     mangaName = thisManga[0]
     clear()
