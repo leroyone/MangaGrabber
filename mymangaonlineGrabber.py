@@ -28,13 +28,13 @@ def searchMymangaonline(searchTerm):
     searchTerm: (+) concatenated string
     returns a dict with search results (name, page-link, image-link)
     '''
-    scratchPage = webPageOpener('http://mangaonline.to/search.html?keyword=' + searchTerm)
+    scratchPage = webPageOpener('http://mangaonlinehere.com/search.html?keyword=' + searchTerm)
     scratchPage = scratchPage[scratchPage.index('popular-body')+15:]
     resultsList = []
     resultsDict = {}
     resCount = 1
     while 'mask-title' in scratchPage:
-        resLink = 'http://mangaonline.to/' + scratchPage[scratchPage.index('manga-info'):scratchPage.index('">')]
+        resLink = 'http://mangaonlinehere.com/' + scratchPage[scratchPage.index('manga-info'):scratchPage.index('">')]
         scratchPage = scratchPage[scratchPage.index('src')+5:]
         resImage = scratchPage[:scratchPage.index('" ')]
         scratchPage = scratchPage[scratchPage.index('alt')+5:]
@@ -71,7 +71,7 @@ def chapterListMaker(homePage):
     chapterList = []
     while 'read-online' in homePage:
         homePage = homePage[homePage.index('read-online'):]
-        chapterLink = 'http://mangaonline.to/' + homePage[:homePage.index('"')]
+        chapterLink = 'http://mangaonlinehere.com/' + homePage[:homePage.index('"')]
         chapterList.insert(0,chapterLink)
         homePage = homePage[homePage.index('href'):]
     return chapterList
@@ -119,7 +119,7 @@ def imageGrabber(chapterPage, nameOfFile):
         imageLink = chapterSource[:chapterSource.index(ending)]
         os.system('wget -P ' + chapTitle + ' ' + imageLink)
         oldName = imageLink[imageLink.rindex('/'):]
-        if 'jpg' in imageLink:
+        if 'jpg' in imageLink or 'jpeg' in imageLink:
             newName = str(nameCounter) + '.jpg'
         elif 'png' in imageLink:
             newName = str(nameCounter) + '.png'
