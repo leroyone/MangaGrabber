@@ -19,8 +19,8 @@ To Do List:
 def webPageOpener(webPage):
     opener = urllib2.build_opener()
     opener.addheaders = [('User-agent', 'Mozilla/5.0')]
+    attempt = 1    
     while True:
-        attempt = 1
         try:
             x = opener.open(webPage).read()
             break
@@ -107,7 +107,7 @@ def nameFixer(nameToFix):
     nameToFix = nameToFix.replace(')','')
     return nameToFix
 
-def imageGrabber(chapterPage, nameOfFile):
+def imageGrabber(chapterPage, nameOfFile, chapterNumber):
     '''
     chapterPage: address of chapter
     downloads images into a folder
@@ -146,7 +146,7 @@ def whichChapters(startChapter, endChapter, chapterList, nameOfFile):
     '''
     os.system('mkdir ' + nameOfFile)
     for i in range(startChapter-1,endChapter):
-        imageGrabber(chapterList[i], nameOfFile)
+        imageGrabber(chapterList[i], nameOfFile, i)
 
 def getNameOfFile():
     a = raw_input('What would you like to name the file?\n')
