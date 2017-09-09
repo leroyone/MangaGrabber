@@ -19,7 +19,15 @@ To Do List:
 def webPageOpener(webPage):
     opener = urllib2.build_opener()
     opener.addheaders = [('User-agent', 'Mozilla/5.0')]
-    return opener.open(webPage).read()
+    while True:
+        attempt = 1
+        try:
+            x = opener.open(webPage).read()
+            break
+        except urllib2.URLError:
+            print 'Recconection attempt: ' + str(attempt)
+            attempt += 1
+    return x
 
 ######### Do a Search ###########
 
@@ -95,6 +103,8 @@ def nameFixer(nameToFix):
     nameToFix = nameToFix.replace(':','')
     nameToFix = nameToFix.replace("'","")    
     nameToFix = nameToFix.replace('"','')
+    nameToFix = nameToFix.replace('(','')
+    nameToFix = nameToFix.replace(')','')
     return nameToFix
 
 def imageGrabber(chapterPage, nameOfFile):
@@ -106,6 +116,7 @@ def imageGrabber(chapterPage, nameOfFile):
     chapterSource = webPageOpener(chapterPage)
     chapTitle = chapterTitle(chapterPage)
     chapTitle = nameFixer(chapTitle)
+    chapTitle = str(10001 + chapterNumber) + '-' + chapTitle
     chapTitle = nameOfFile + '/' + chapTitle
     os.system('mkdir ' + chapTitle)
     while 'img id' in chapterSource:
