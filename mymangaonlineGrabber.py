@@ -25,7 +25,7 @@ def webPageOpener(webPage):
             x = opener.open(webPage).read()
             break
         except urllib2.URLError:
-            print 'Recconection attempt: ' + str(attempt)
+            print 'Reconnection attempt: ' + str(attempt)
             attempt += 1
     return x
 
@@ -123,8 +123,17 @@ def imageGrabber(chapterPage, nameOfFile, chapterNumber):
         chapterSource = chapterSource[chapterSource.index('img id'):]
         chapterSource = chapterSource[chapterSource.index(' src')+6:]
         if chapterSource[0] == '0':
-            ending = "'"
-            chapterSource = chapterSource[chapterSource.index('.src')+6:]
+            clear()
+            print chapterSource[:500]
+            print '\n----------------------------------------------------------------------------------------\n'
+            print 'Image not found.\nHere are the next 500 characters in the code.'
+            noImageFound = raw_input('Can you see the image?(Y/n)')
+            if noImageFound in ('N','n'):
+                continue
+            if noImageFound in ('Y', 'y'):
+                linkStart = raw_input('Enter text preceding the link')
+                ending = raw_input('Enter the character just after the link')
+                chapterSource = chapterSource[chapterSource.index(linkStart)+len(linkStart):]
         else:
             ending = '"'
         imageLink = chapterSource[:chapterSource.index(ending)]
