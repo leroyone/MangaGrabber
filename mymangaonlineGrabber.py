@@ -6,7 +6,6 @@ import os
 
 ''' 
 To Do List:
-    Intergrate search function
     Create some graphic interface
     Retain the ability to work from command
     Organize folder structure
@@ -43,6 +42,31 @@ def searchMymangaonline(searchTerm):
     linksScratchList = scratchTree.xpath('//div[@class="popular-body"]//a/@href')
     resultsList = zip(namesScratchList,linksScratchList)
     return resultsList
+
+def searchKissManga(missing, searchTerm):
+    scratchPage = webPageOpener('https://kiss-manga.com/search?type=all&query=' + searchTerm)
+    scratchTree = html.fromstring(scratchPage)
+    namesScratchList = scratchTree.xpath('//a[@class="manga-name"]/text()')
+    linksScratchList = scratchTree.xpath('//a[@class="manga-name"]/@href')
+    searchResults = zip(namesScratchList,linksScratchList)
+    
+###################################
+    count = 1
+    for eachResult in searchResults:
+        print str(count) + ') ' + eachResult[0]
+        count += 1
+    if len(searchResults) > 0:
+        foundText = '\nWe have found ' + str(len(searchResults)) + ' popular results.\nWhich Manga would you like to try? (1-' + str(len(searchResults)) + ')\n'
+    else:
+        raw_input('We have found no results for "' + searchStringOriginal + '"\nPlease try again.\n')
+        return
+    selection = int(raw_input(foundText))-1
+    thisManga = searchResults[selection]
+    mangaName = thisManga[0]
+    clear()
+    confirm = raw_input('You would like to try "' + mangaName + '"? (Y/n) ')
+####################################
+
 
 def checkResultsPageCount(scratchPage):
     '''
@@ -101,6 +125,7 @@ def imageGrabber(chapterPage, nameOfFile, chapterNumber):
     chapterPage: address of chapter
     downloads images into a folder
     '''
+    missing = []
     nameCounter = 111111
     chapterSource = webPageOpener(chapterPage)
     chapTitle = chapterTitle(chapterPage)
@@ -128,15 +153,18 @@ def imageGrabber(chapterPage, nameOfFile, chapterNumber):
             nameCounter += 1
             '''
         else:
-            missingPages.append('chap-'+str(chapterNumber+1)+' pg-'+str(each+1))
+            missing.append([chapTitle, str(chapterNumber+1), str(each+1)])
+    return missing
 
 def whichChapters(startChapter, endChapter, chapterList, nameOfFile):
     '''
     downloads chapters from within range
     '''
+    missingPages = []
     os.system('mkdir ' + nameOfFile)
     for i in range(startChapter-1,endChapter):
-        imageGrabber(chapterList[i], nameOfFile, i)
+        missingPages += imageGrabber(chapterList[i], nameOfFile, i)
+    return missingPages
 
 def getNameOfFile():
     a = raw_input('What would you like to name the file?\n')
@@ -151,7 +179,13 @@ def turnIntoCBZ(nameOfFile):
 def clear():
     os.system('clear')
 
-missingPages = []
+def getMissing(missing, searchString):
+    clear()
+    for each in missing:
+        print each
+    goGetEm = raw_input('\nThese pages are missing. Do you want to search another site? (Y/n)\n')
+    if goGetEm in ('Y','y'):
+        searchKissManga(missing, searchString)
 
 def commandLineRun():
     clear()
@@ -187,8 +221,9 @@ def commandLineRun():
     clear()
     print 'Ready to download chapters ' + str(startChapter) + ' to ' + str(endChapter) + ' from ' + mangaName + '.\n\n'
     nameOfFile = getNameOfFile()
-    whichChapters(startChapter, endChapter, chapterList, nameOfFile)
+    missingPages = whichChapters(startChapter, endChapter, chapterList, nameOfFile)
+    if len(missingPages) >0:
+        getMissing(missingPages, searchString)
     turnIntoCBZ(nameOfFile)
-    print missingPages
     
 commandLineRun()
