@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 import urllib2
-import pickle
+from lxml import html
 import os
 
 ''' 
@@ -19,7 +19,7 @@ To Do List:
 def webPageOpener(webPage):
     opener = urllib2.build_opener()
     opener.addheaders = [('User-agent', 'Mozilla/5.0')]
-    attempt = 1    
+    attempt = 1
     while True:
         try:
             x = opener.open(webPage).read()
@@ -34,28 +34,19 @@ def webPageOpener(webPage):
 def searchMymangaonline(searchTerm):
     ''' 
     searchTerm: (+) concatenated string
-    returns a dict with search results (name, page-link, image-link)
+    returns a list of tuples with search results (name, page-link)
     '''
     scratchPage = webPageOpener('http://mangaonlinehere.com/search.html?keyword=' + searchTerm)
-    scratchPage = scratchPage[scratchPage.index('popular-body')+15:]
-    resultsList = []
-    resultsDict = {}
-    resCount = 1
-    while 'mask-title' in scratchPage:
-        resLink = 'http://mangaonlinehere.com/' + scratchPage[scratchPage.index('manga-info'):scratchPage.index('">')]
-        scratchPage = scratchPage[scratchPage.index('src')+5:]
-        resImage = scratchPage[:scratchPage.index('" ')]
-        scratchPage = scratchPage[scratchPage.index('alt')+5:]
-        resName = scratchPage[:scratchPage.index('"')]
-        scratchPage = scratchPage[scratchPage.index('</span>')+5:]
-        resultsList.append([resName,[resLink,resImage]])
-        resultsDict[resName]=resLink,resImage,resCount
-        resCount += 1
+    scratchTree = html.fromstring(scratchPage)
+    
+    namesScratchList = scratchTree.xpath('//div[@class="popular-body"]//img/@alt')
+    linksScratchList = scratchTree.xpath('//div[@class="popular-body"]//a/@href')
+    resultsList = zip(namesScratchList,linksScratchList)
     return resultsList
 
 def checkResultsPageCount(scratchPage):
     '''
-    returns total number of pages of seach results
+    returns total number of pages of search results
     '''
     if 'class="last"' in scratchPage:
         scratchPage = scratchPage[scratchPage.index('class="last"'):]
@@ -64,8 +55,6 @@ def checkResultsPageCount(scratchPage):
         return int(resPageCount)
     else:
         return 0
-
-
 
 ############## Get the Images ###################
 
@@ -119,35 +108,27 @@ def imageGrabber(chapterPage, nameOfFile, chapterNumber):
     chapTitle = str(10001 + chapterNumber) + '-' + chapTitle
     chapTitle = nameOfFile + '/' + chapTitle
     os.system('mkdir ' + chapTitle)
-    while 'img id' in chapterSource:
-        chapterSource = chapterSource[chapterSource.index('img id'):]
-        chapterSource = chapterSource[chapterSource.index(' src')+6:]
-        if chapterSource[0] == '0':
-            clear()
-            print chapterSource[:500]
-            print '\n----------------------------------------------------------------------------------------\n'
-            print 'Image not found.\nHere are the next 500 characters in the code.'
-            noImageFound = raw_input('Can you see the image?(Y/n)')
-            if noImageFound in ('N','n'):
-                continue
-            if noImageFound in ('Y', 'y'):
-                linkStart = raw_input('Enter text preceding the link')
-                ending = raw_input('Enter the character just after the link')
-                chapterSource = chapterSource[chapterSource.index(linkStart)+len(linkStart):]
+    tree = html.fromstring(chapterSource)
+    imageLink = tree.xpath('//img[@id]/@src')
+    for each in range(len(imageLink)):
+        pass
+        if 'http' in imageLink[each]:
+            pass
+            '''
+            os.system('wget -P ' + chapTitle + ' ' + imageLink[each])
+            oldName = imageLink[each][imageLink[each].rindex('/'):]
+            if 'jpg' in imageLink[each] or 'jpeg' in imageLink[each]:
+                newName = str(nameCounter) + '.jpg'
+            elif 'png' in imageLink[each]:
+                newName = str(nameCounter) + '.png'
+            else:
+                print 'Unknown image type'
+                break
+            os.system('mv ' + chapTitle + '/' + oldName + ' ' + chapTitle + '/' + newName)
+            nameCounter += 1
+            '''
         else:
-            ending = '"'
-        imageLink = chapterSource[:chapterSource.index(ending)]
-        os.system('wget -P ' + chapTitle + ' ' + imageLink)
-        oldName = imageLink[imageLink.rindex('/'):]
-        if 'jpg' in imageLink or 'jpeg' in imageLink:
-            newName = str(nameCounter) + '.jpg'
-        elif 'png' in imageLink:
-            newName = str(nameCounter) + '.png'
-        else:
-            print 'Unknown image type'
-            break
-        os.system('mv ' + chapTitle + '/' + oldName + ' ' + chapTitle + '/' + newName)
-        nameCounter += 1
+            missingPages.append('chap-'+str(chapterNumber+1)+' pg-'+str(each+1))
 
 def whichChapters(startChapter, endChapter, chapterList, nameOfFile):
     '''
@@ -169,6 +150,8 @@ def turnIntoCBZ(nameOfFile):
 
 def clear():
     os.system('clear')
+
+missingPages = []
 
 def commandLineRun():
     clear()
@@ -195,7 +178,7 @@ def commandLineRun():
     if confirm == 'n' or confirm == 'N':
         print '\nThen why did you select it...?\n'
         return
-    chapterList = chapterListMaker(thisManga[1][0])
+    chapterList = chapterListMaker('http://mangaonlinehere.com/' +thisManga[1])
     clear()
     print 'There are ' + str(len(chapterList)) + ' chapters available for "' + mangaName + '".'
     print 'Which chapters would you like to download?\n'
@@ -206,5 +189,6 @@ def commandLineRun():
     nameOfFile = getNameOfFile()
     whichChapters(startChapter, endChapter, chapterList, nameOfFile)
     turnIntoCBZ(nameOfFile)
+    print missingPages
     
 commandLineRun()
