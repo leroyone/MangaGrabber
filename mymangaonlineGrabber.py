@@ -43,6 +43,33 @@ def searchMymangaonline(searchTerm):
     resultsList = zip(namesScratchList,linksScratchList)
     return resultsList
 
+def retrieveTheImages(missing,page):
+    scratchPage = webPageOpener(page)
+    scratchTree = html.fromstring(scratchPage)
+    
+    chapterList = scratchTree.xpath('//div[@class="list_chapters"]//a/@href')
+    clear()
+    chapterList.reverse()
+    chapNum = 999999999
+    for each in missing:
+        if each[1] != chapNum:
+            chapNum = each[1]
+            chapScratch = webPageOpener('https://kiss-manga.com' + chapterList[chapNum])
+            chapTree = html.fromstring(chapScratch)
+        imageLink = chapTree.xpath('//img[@class="fullsizable"]/@src')[each[2]]
+        os.system('wget -P ' + each[0] + ' ' + imageLink)
+        oldName = imageLink[imageLink.rindex('/'):]
+        if 'jpg' in imageLink or 'jpeg' in imageLink:
+            newName = each[3] + '.jpg'
+        elif 'png' in imageLink:
+            newName = each[3] + '.png'
+        else:
+            print 'Unknown image type'
+            break
+        os.system('mv ' + each[0] + '/' + oldName + ' ' + each[0] + '/' + newName)
+        raw_input()
+    
+
 def searchKissManga(missing, searchTerm):
     scratchPage = webPageOpener('https://kiss-manga.com/search?type=all&query=' + searchTerm)
     scratchTree = html.fromstring(scratchPage)
@@ -50,23 +77,12 @@ def searchKissManga(missing, searchTerm):
     linksScratchList = scratchTree.xpath('//a[@class="manga-name"]/@href')
     searchResults = zip(namesScratchList,linksScratchList)
     
-###################################
-    count = 1
-    for eachResult in searchResults:
-        print str(count) + ') ' + eachResult[0]
-        count += 1
-    if len(searchResults) > 0:
-        foundText = '\nWe have found ' + str(len(searchResults)) + ' popular results.\nWhich Manga would you like to try? (1-' + str(len(searchResults)) + ')\n'
-    else:
-        raw_input('We have found no results for "' + searchStringOriginal + '"\nPlease try again.\n')
-        return
-    selection = int(raw_input(foundText))-1
-    thisManga = searchResults[selection]
-    mangaName = thisManga[0]
     clear()
-    confirm = raw_input('You would like to try "' + mangaName + '"? (Y/n) ')
-####################################
-
+    for each in range(len(searchResults)):
+        print str(each) + ') ' + searchResults[each][0]
+    selection = int(raw_input('\nWhich one...?'))
+    raw_input('\n\nIs this correct...?\n\n(' + searchResults[selection][0] + ')')
+    retrieveTheImages(missing,'https://kiss-manga.com' + searchResults[selection][1])
 
 def checkResultsPageCount(scratchPage):
     '''
@@ -138,8 +154,6 @@ def imageGrabber(chapterPage, nameOfFile, chapterNumber):
     for each in range(len(imageLink)):
         pass
         if 'http' in imageLink[each]:
-            pass
-            '''
             os.system('wget -P ' + chapTitle + ' ' + imageLink[each])
             oldName = imageLink[each][imageLink[each].rindex('/'):]
             if 'jpg' in imageLink[each] or 'jpeg' in imageLink[each]:
@@ -151,9 +165,9 @@ def imageGrabber(chapterPage, nameOfFile, chapterNumber):
                 break
             os.system('mv ' + chapTitle + '/' + oldName + ' ' + chapTitle + '/' + newName)
             nameCounter += 1
-            '''
         else:
-            missing.append([chapTitle, str(chapterNumber+1), str(each+1)])
+            missing.append([chapTitle, chapterNumber, each, str(nameCounter)])
+            nameCounter += 1
     return missing
 
 def whichChapters(startChapter, endChapter, chapterList, nameOfFile):
@@ -224,6 +238,7 @@ def commandLineRun():
     missingPages = whichChapters(startChapter, endChapter, chapterList, nameOfFile)
     if len(missingPages) >0:
         getMissing(missingPages, searchString)
+    raw_input()
     turnIntoCBZ(nameOfFile)
     
 commandLineRun()
