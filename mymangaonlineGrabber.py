@@ -44,6 +44,8 @@ def searchMymangaonline(searchTerm):
     return resultsList
 
 def retrieveTheImages(missing,page):
+    stillMissing = []
+    
     scratchPage = webPageOpener(page)
     scratchTree = html.fromstring(scratchPage)
     
@@ -56,19 +58,22 @@ def retrieveTheImages(missing,page):
             chapNum = each[1]
             chapScratch = webPageOpener('https://kiss-manga.com' + chapterList[chapNum])
             chapTree = html.fromstring(chapScratch)
-        imageLink = chapTree.xpath('//img[@class="fullsizable"]/@src')[each[2]]
-        os.system('wget -P ' + each[0] + ' ' + imageLink)
-        oldName = imageLink[imageLink.rindex('/'):]
-        if 'jpg' in imageLink or 'jpeg' in imageLink:
-            newName = each[3] + '.jpg'
-        elif 'png' in imageLink:
-            newName = each[3] + '.png'
+        imageLinksList = chapTree.xpath('//img[@class="fullsizable"]/@src')
+        if each[2] in range(len(imageLinksList)):
+            imageLink = imageLinksList[each[2]]
+            os.system('wget -P ' + each[0] + ' ' + imageLink)
+            oldName = imageLink[imageLink.rindex('/'):]
+            if 'jpg' in imageLink or 'jpeg' in imageLink:
+                newName = each[3] + '.jpg'
+            elif 'png' in imageLink:
+                newName = each[3] + '.png'
+            else:
+                print 'Unknown image type'
+                break
+            os.system('mv ' + each[0] + '/' + oldName + ' ' + each[0] + '/' + newName)
         else:
-            print 'Unknown image type'
-            break
-        os.system('mv ' + each[0] + '/' + oldName + ' ' + each[0] + '/' + newName)
-        raw_input()
-    
+            stillMissing.append(each)
+    return stillMissing
 
 def searchKissManga(missing, searchTerm):
     scratchPage = webPageOpener('https://kiss-manga.com/search?type=all&query=' + searchTerm)
@@ -82,7 +87,8 @@ def searchKissManga(missing, searchTerm):
         print str(each) + ') ' + searchResults[each][0]
     selection = int(raw_input('\nWhich one...?'))
     raw_input('\n\nIs this correct...?\n\n(' + searchResults[selection][0] + ')')
-    retrieveTheImages(missing,'https://kiss-manga.com' + searchResults[selection][1])
+    stillMissing = retrieveTheImages(missing,'https://kiss-manga.com' + searchResults[selection][1])
+    return stillMissing
 
 def checkResultsPageCount(scratchPage):
     '''
@@ -199,7 +205,8 @@ def getMissing(missing, searchString):
         print each
     goGetEm = raw_input('\nThese pages are missing. Do you want to search another site? (Y/n)\n')
     if goGetEm in ('Y','y'):
-        searchKissManga(missing, searchString)
+        stillMissing = searchKissManga(missing, searchString)
+    return stillMissing
 
 def commandLineRun():
     clear()
@@ -237,8 +244,13 @@ def commandLineRun():
     nameOfFile = getNameOfFile()
     missingPages = whichChapters(startChapter, endChapter, chapterList, nameOfFile)
     if len(missingPages) >0:
-        getMissing(missingPages, searchString)
-    raw_input()
+        stillMissing = getMissing(missingPages, searchString)
+    if len(stillMissing) >0:
+        clear()
+        for each in stillMissing:
+            print each
+        print '\nThese pages are still missing...\n'
+        raw_input('Press enter to zip me up and cbz me out')
     turnIntoCBZ(nameOfFile)
     
 commandLineRun()
