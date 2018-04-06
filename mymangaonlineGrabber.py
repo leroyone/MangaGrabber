@@ -155,6 +155,8 @@ def imageGrabber(chapterPage, nameOfFile, chapterNumber):
     os.system('mkdir ' + chapTitle)
     imageLink = tree.xpath('//img[@class="fullsizable"]/@src')
     for each in range(len(imageLink)):
+        if len(imageLink[each]) > 0 and imageLink[each][:2] == '//':
+            imageLink[each] = 'https:' + imageLink[each]
         if 'http' in imageLink[each]:
             os.system('wget -P ' + chapTitle + ' ' + imageLink[each])
             oldName = imageLink[each][imageLink[each].rindex('/'):]
