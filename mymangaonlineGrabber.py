@@ -30,18 +30,17 @@ def webPageOpener(webPage):
 
 ######### Do a Search ###########
 
-def searchMymangaonline(searchTerm):
+def searchSite(searchTerm):
     ''' 
     searchTerm: (+) concatenated string
     returns a list of tuples with search results (name, page-link)
     '''
-    scratchPage = webPageOpener('http://mangaonlinehere.com/search.html?keyword=' + searchTerm)
-    scratchTree = html.fromstring(scratchPage)
-    
-    namesScratchList = scratchTree.xpath('//div[@class="popular-body"]//img/@alt')
-    linksScratchList = scratchTree.xpath('//div[@class="popular-body"]//a/@href')
-    resultsList = zip(namesScratchList,linksScratchList)
-    return resultsList
+    kissPage = webPageOpener('https://kiss-manga.com/search?type=all&query=' + searchTerm)
+    kissTree = html.fromstring(kissPage)
+    namesKissList = kissTree.xpath('//a[@class="manga-name"]/text()')
+    linksKissList = kissTree.xpath('//a[@class="manga-name"]/@href')
+    kissResults = zip(namesKissList,linksKissList)
+    return kissResults
 
 def retrieveTheImages(missing,page):
     stillMissing = []
@@ -110,14 +109,12 @@ def chapterListMaker(homePage):
     homePage: address for a manga main page
     returns a list of chapter links
     '''
-    homePage = webPageOpener(homePage)
-    chapterList = []
-    while 'read-online' in homePage:
-        homePage = homePage[homePage.index('read-online'):]
-        chapterLink = 'http://mangaonlinehere.com/' + homePage[:homePage.index('"')]
-        chapterList.insert(0,chapterLink)
-        homePage = homePage[homePage.index('href'):]
-    return chapterList
+    kissHomePage = webPageOpener(homePage)
+    kissHomeTree = html.fromstring(kissHomePage)
+    chapterList = kissHomeTree.xpath('//div[@class="list_chapters"]//@href')
+    resultingChapterList = ['https://kiss-manga.com' + link for link in chapterList]
+    resultingChapterList.reverse()
+    return resultingChapterList
 
 def chapterTitle(chapterPage):
     '''
@@ -150,15 +147,14 @@ def imageGrabber(chapterPage, nameOfFile, chapterNumber):
     missing = []
     nameCounter = 111111
     chapterSource = webPageOpener(chapterPage)
-    chapTitle = chapterTitle(chapterPage)
-    chapTitle = nameFixer(chapTitle)
+    tree = html.fromstring(chapterSource)
+    chapTitle = tree.xpath('//div[@class="series__title"]/h1/text()')
+    chapTitle = nameFixer(chapTitle[0])
     chapTitle = str(10001 + chapterNumber) + '-' + chapTitle
     chapTitle = nameOfFile + '/' + chapTitle
     os.system('mkdir ' + chapTitle)
-    tree = html.fromstring(chapterSource)
-    imageLink = tree.xpath('//img[@id]/@src')
+    imageLink = tree.xpath('//img[@class="fullsizable"]/@src')
     for each in range(len(imageLink)):
-        pass
         if 'http' in imageLink[each]:
             os.system('wget -P ' + chapTitle + ' ' + imageLink[each])
             oldName = imageLink[each][imageLink[each].rindex('/'):]
@@ -186,7 +182,7 @@ def whichChapters(startChapter, endChapter, chapterList, nameOfFile):
         missingPages += imageGrabber(chapterList[i], nameOfFile, i)
     return missingPages
 
-def getNameOfFile():
+def getnameOfFile():
     a = raw_input('What would you like to name the file?\n')
     a = nameFixer(a)
     return a
@@ -212,7 +208,7 @@ def commandLineRun():
     clear()
     searchStringOriginal = raw_input('...and what Manga would you like to search for today?\n\n')
     searchString = searchStringOriginal.replace(' ', '+')
-    searchResults = searchMymangaonline(searchString)
+    searchResults = searchSite(searchString)
     clear()
     count = 1
     for eachResult in searchResults:
@@ -233,7 +229,7 @@ def commandLineRun():
     if confirm == 'n' or confirm == 'N':
         print '\nThen why did you select it...?\n'
         return
-    chapterList = chapterListMaker('http://mangaonlinehere.com/' +thisManga[1])
+    chapterList = chapterListMaker('https://kiss-manga.com' +thisManga[1])
     clear()
     print 'There are ' + str(len(chapterList)) + ' chapters available for "' + mangaName + '".'
     print 'Which chapters would you like to download?\n'
@@ -241,15 +237,13 @@ def commandLineRun():
     endChapter = int(raw_input('\nEnd chapter:\n'))
     clear()
     print 'Ready to download chapters ' + str(startChapter) + ' to ' + str(endChapter) + ' from ' + mangaName + '.\n\n'
-    nameOfFile = getNameOfFile()
+    nameOfFile = getnameOfFile()
     missingPages = whichChapters(startChapter, endChapter, chapterList, nameOfFile)
     if len(missingPages) >0:
-        stillMissing = getMissing(missingPages, searchString)
-    if len(stillMissing) >0:
         clear()
-        for each in stillMissing:
+        for each in missingPages:
             print each
-        print '\nThese pages are still missing...\n'
+        print '\nThese pages are missing...\n'
         raw_input('Press enter to zip me up and cbz me out')
     turnIntoCBZ(nameOfFile)
     
