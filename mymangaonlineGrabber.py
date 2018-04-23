@@ -3,6 +3,7 @@
 import urllib2
 from lxml import html
 import os
+from websiteList import *
 
 ''' 
 To Do List:
