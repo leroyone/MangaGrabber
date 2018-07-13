@@ -4,7 +4,6 @@ import urllib2
 from lxml import html
 import os
 import re
-#from tools import *
 
 class Website(object):
     """docstring for Website"""
@@ -27,7 +26,7 @@ class Website(object):
     def printSearch(self):
         count = 1
         for each in self.searchResults:
-            print '%s) %s' % (count, each)
+            print '%s) %s' % (count, each[0])
             count += 1
 
     def nameFixer(self, nameToFix):
@@ -38,11 +37,13 @@ class Manganelo(Website):
     """docstring for Manganelo"""
     def __init__(self):
         self.searchResults = []
+        self.selection = []
         self.chapterList = []
     
     def search(self, searchTerm):
         '''
         searchTerm = string
+        saves a list of search results
         '''
         searchTerm = searchTerm.replace(' ', '_')
         page = self.webPageOpener('https://manganelo.com/search/' + searchTerm)
@@ -52,11 +53,11 @@ class Manganelo(Website):
         #linksList = ['https:' + each for each in linksList]
         self.searchResults = zip(namesList,linksList)
 
-    def chapterListMaker(self, contentsPageLink):
+    def chapterListMaker(self):
         '''
-        contentsPage: address for a manga contents page
-        returns a list of chapter links
+        saves list of chapter links
         '''
+        contentsPageLink = self.selection[1]
         contentsPage = self.webPageOpener(contentsPageLink)
         contentsTree = html.fromstring(contentsPage)
         resultingChapterList = contentsTree.xpath('//div[@class="chapter-list"]//@href')
@@ -73,7 +74,10 @@ first.printSearch()
 
 selection = int(raw_input('\nWe have found {0} popular results.\nWhich Manga would you like to try? (1-{0})\n'.format(len(first.searchResults)) ) )-1
 
-first.chapterListMaker(first.searchResults[selection][1])
+first.selection = first.searchResults[selection]
+first.chapterListMaker()
 
-for each in first.chapterList:
-    print each
+print 'There are %s chapters available for "%s".' % (len(first.chapterList), first.selection[0])
+print 'Which chapters would you like to download?\n'
+startChapter = int(raw_input('Starting chapter:\n'))
+endChapter = int(raw_input('\nEnd chapter:\n'))
