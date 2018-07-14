@@ -37,18 +37,48 @@ class Website(object):
         '''
         downloads chapters from within range
         '''
-        mangaName = self.nameFixer(self.selection[0])
-        os.mkdir(mangaName)
-        for i in range(startChapter-1,endChapter):
-            self.imageGrabber(self.chapterList[i], mangaName, i)
+        folderName = self.nameFixer(self.mangaName)
+        print folderName
+        os.mkdir(folderName)
+        for i in range(startChapter-1, endChapter):
+            chapterPath = self.chapterPath(folderName, self.chapterList[i][1], i)
+            os.mkdir(chapterPath)
+            images = self.getImageLinks(self.chapterList[i])
+            self.saveChapters(images, chapterPath)
+
+    def chapterPath(self, folderName, chapterName, chapterNumber):
+        chapTitle = self.nameFixer(chapterName)
+        chapTitle = '%s-%s' % (10000 + chapterNumber, chapTitle)
+        chapTitle = '%s/%s' % (folderName, chapTitle)
+        return chapTitle
+
+    def saveChapters(self, images, chapterPath):
+        for imageLink in images:
+            imagePath = '%s/%s' % (chapterPath, 10001 + images.index(imageLink))
+            if 'http' in imageLink and 'jpg' in imageLink or 'jpeg' in imageLink:
+                image = self.webPageOpener(imageLink)
+                with open('%s.jpg' % imagePath, 'wb') as f:
+                    f.write(image)
+            elif 'http' in imageLink and 'png' in imageLink:
+                image = self.webPageOpener(imageLink)
+                with open('%s.png' % imagePath, 'wb') as f:
+                    f.write(image)
+            else:
+                self.missingPages.append('Page %s in %s' % (images.index(imageLink), chapterPath))
 
 class Manganelo(Website):
     """docstring for Manganelo"""
     def __init__(self):
+        self.mangaLink = ''
+        self.mangaName = ''
         self.searchResults = []
-        self.selection = []
         self.chapterList = []
+        self.missingPages = []
     
+    def selectionMade(self, selection):
+        self.mangaLink = self.searchResults[selection][1]
+        self.mangaName = self.searchResults[selection][0]
+
     def search(self, searchTerm):
         '''
         searchTerm = string
@@ -66,8 +96,7 @@ class Manganelo(Website):
         '''
         saves list of chapter links
         '''
-        contentsPageLink = self.selection[1]
-        contentsPage = self.webPageOpener(contentsPageLink)
+        contentsPage = self.webPageOpener(self.mangaLink)
         contentsTree = html.fromstring(contentsPage)
         ChapterLinkList = contentsTree.xpath('//div[@class="chapter-list"]//@href')
         ChapterNamesList = contentsTree.xpath('//div[@class="chapter-list"]//a/text()')
@@ -76,44 +105,15 @@ class Manganelo(Website):
         resultingChapterList.reverse()
         self.chapterList = resultingChapterList
 
-    def imageGrabber(self, chapterPage, nameOfFile, chapterNumber):
+    def getImageLinks(self, chapterPage):
         '''
         chapterPage: address of chapter
-        downloads images into a folder
+        returns: list of image links
         '''
-        nameCounter = 111111
         chapterSource = self.webPageOpener(chapterPage[0])
         tree = html.fromstring(chapterSource)
-        chapTitle = self.nameFixer(chapterPage[1])
-        chapTitle = '%s-%s' % (10001 + chapterNumber, chapTitle)
-        chapTitle = '{0}/{1}'.format(nameOfFile, chapTitle)
-        os.mkdir(chapTitle)
-        '''
-        chapTitle = str(10001 + chapterNumber) + '-' + chapTitle
-
-        chapTitle = nameOfFile + '/' + chapTitle
-        os.system('mkdir ' + chapTitle)
-        imageLink = tree.xpath('//img[@class="fullsizable"]/@src')
-        for each in range(len(imageLink)):
-            if len(imageLink[each]) > 0 and imageLink[each][:2] == '//':
-                imageLink[each] = 'https:' + imageLink[each]
-            if 'http' in imageLink[each]:
-                os.system('wget -P ' + chapTitle + ' ' + imageLink[each])
-                oldName = imageLink[each][imageLink[each].rindex('/'):]
-                if 'jpg' in imageLink[each] or 'jpeg' in imageLink[each]:
-                    newName = str(nameCounter) + '.jpg'
-                elif 'png' in imageLink[each]:
-                    newName = str(nameCounter) + '.png'
-                else:
-                    print 'Unknown image type'
-                    break
-                os.system('mv ' + chapTitle + '/' + oldName + ' ' + chapTitle + '/' + newName)
-                nameCounter += 1
-            else:
-                missing.append([chapTitle, chapterNumber, each, str(nameCounter)])
-                nameCounter += 1
-        return missing
-        '''
+        images = tree.xpath('//img[@class="img_content"]/@src')
+        return images
 
 first = Manganelo()
 
@@ -124,10 +124,10 @@ first.printSearch()
 
 selection = int(raw_input('\nWe have found {0} popular results.\nWhich Manga would you like to try? (1-{0})\n'.format(len(first.searchResults)) ) )-1
 
-first.selection = first.searchResults[selection]
+first.selectionMade(selection)
 first.chapterListMaker()
 
-print 'There are %s chapters available for "%s".' % (len(first.chapterList), first.selection[0])
+print 'There are %s chapters available for "%s".' % (len(first.chapterList), first.mangaName)
 print 'Which chapters would you like to download?\n'
 startChapter = int(raw_input('Starting chapter:\n'))
 endChapter = int(raw_input('\nEnd chapter:\n'))
