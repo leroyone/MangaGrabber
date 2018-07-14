@@ -4,6 +4,7 @@ import urllib2
 from lxml import html
 import os
 import re
+import shutil
 
 class Website(object):
     """docstring for Website"""
@@ -33,7 +34,7 @@ class Website(object):
         nameToFix = re.sub('[^a-zA-Z0-9 ]', '', nameToFix)
         return re.sub(' ', '-', nameToFix)
     
-    def whichChapters(self, startChapter, endChapter):
+    def getChapters(self, startChapter, endChapter):
         '''
         downloads chapters from within range
         '''
@@ -65,6 +66,13 @@ class Website(object):
                     f.write(image)
             else:
                 self.missingPages.append('Page %s in %s' % (images.index(imageLink), chapterPath))
+
+    def turnIntoCBZ(self):
+        nameOfFile = self.nameFixer(self.mangaName)
+        shutil.make_archive(nameOfFile, 'zip', nameOfFile)
+        os.rename('%s.zip' % nameOfFile, '%s.cbz' % nameOfFile)
+        raw_input('\nRemove the original files?\n')
+        shutil.rmtree(nameOfFile)
 
 class Manganelo(Website):
     """docstring for Manganelo"""
@@ -132,4 +140,14 @@ print 'Which chapters would you like to download?\n'
 startChapter = int(raw_input('Starting chapter:\n'))
 endChapter = int(raw_input('\nEnd chapter:\n'))
 
-first.whichChapters(startChapter, endChapter)
+raw_input('\nChapters %s to %s?' % (startChapter, endChapter))
+first.getChapters(startChapter, endChapter)
+
+print '\nMissing Pages\n'
+for each in first.missingPages:
+    print each
+
+raw_input('\nReady to cbz?\n')
+first.turnIntoCBZ()
+
+print '\n\n\n\n\n\nDone!!\n\n\n\n\n\n'
