@@ -120,7 +120,7 @@ class Manganelo(Website):
         '''
         chapterSource = self.webPageOpener(chapterPage[0])
         tree = html.fromstring(chapterSource)
-        images = tree.xpath('//img[@class="img_content"]/@src')
+        images = tree.xpath('//div[@id="vungdoc"]//img/@src')
         return images
 
 first = Manganelo()
